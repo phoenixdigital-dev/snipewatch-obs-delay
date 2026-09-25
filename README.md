@@ -1,4 +1,4 @@
-# SnipeWatch Delay for OBS (spike)
+# SnipeWatch Delay for OBS
 
 Change your stream delay **while live**, without the stream dropping. Part of the SnipeWatch anti stream-sniping tools of [app.cs2rouen.fr](https://app.cs2rouen.fr).
 
@@ -24,6 +24,15 @@ Nothing is re-encoded. Memory: about 1 MB per second of history at 6 Mbps (up to
 6. **Tools → SnipeWatch Delay: restore original service** to go back.
 
 Remote control: obs-websocket vendor `snipewatch-delay`, requests `SetDelay {"seconds": 30}` and `GetState`, event `DelayChanged`.
+
+## Link with SnipeWatch (v0.2)
+
+With a personal token (SnipeWatch → Settings → SnipeWatch → *Plugin token*, pasted via **Tools → SnipeWatch Delay: connect to SnipeWatch**), the plugin asks the app every 3 s while live (30 s otherwise) which delay to apply. The app decides from:
+
+- **chat commands** (`!delay`, `!delay30`, `!delay 60`, `!stopdelay`, `!nodelay`), from the streamer and, if allowed, mods / VIPs;
+- **automatic triggers**: start of each FACEIT match, suspect nickname detected by SnipeWatch, end of the match.
+
+What the plugin sends: its token, the delay it applies, whether it is streaming and in delay mode, its version. What it receives: a number of seconds. Nothing else (see `src/remote.c`). **Tools → SnipeWatch Delay: status** shows the connection state.
 
 ## Spike result (25 Sept. 2026)
 
