@@ -287,6 +287,27 @@ jobs:
           target: x64
           config: ${{ needs.check-event.outputs.config }}
 
+      # Les logs d'Actions exigent d'être connecté ; les annotations sont publiques.
+      # En cas d'échec, on rejoue configure/build et on publie les erreurs en annotations.
+      - name: Report build errors as annotations 📝
+        if: failure()
+        run: |
+          $log = if (Test-Path build_x64/CMakeCache.txt) {
+            cmake --build build_x64 --config RelWithDebInfo 2>&1 | Out-String
+          } else {
+            cmake --preset windows-ci-x64 2>&1 | Out-String
+          }
+          $lines = $log -split "`r?`n" | Where-Object { $_ -match '(error|Error|CMake Warning|fatal)' } | Select-Object -Unique -First 120
+          if (-not $lines) { $lines = ($log -split "`r?`n") | Select-Object -Last 60 }
+          $chunks = [System.Collections.Generic.List[string]]::new()
+          for ($i = 0; $i -lt $lines.Count; $i += 12) {
+            $chunks.Add((($lines[$i..([Math]::Min($i + 11, $lines.Count - 1))]) -join ' || '))
+          }
+          foreach ($c in ($chunks | Select-Object -First 10)) {
+            $msg = $c -replace '%', '%25' -replace "`r", '%0D' -replace "`n", '%0A'
+            Write-Output "::error title=build::$msg"
+          }
+
       - name: Package Plugin 📀
         uses: ./.github/actions/package-plugin
         with:
