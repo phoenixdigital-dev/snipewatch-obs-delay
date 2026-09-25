@@ -25,6 +25,13 @@ Nothing is re-encoded. Memory: about 1 MB per second of history at 6 Mbps (up to
 
 Remote control: obs-websocket vendor `snipewatch-delay`, requests `SetDelay {"seconds": 30}` and `GetState`, event `DelayChanged`.
 
+## Spike result (25 Sept. 2026)
+
+Tested live on Twitch by the author with many back-and-forth changes (0 ↔ 30 ↔ 60 s):
+no disconnection (Twitch Inspector), audio/video stay in sync. Viewers see a raise after ~6 s
+and a removal after ~12 s: that is the Twitch player buffer and pipeline, plus waiting for the
+next keyframe (every 2 s) when lowering the delay.
+
 ## Spike limitations
 
 - Plain RTMP only (no RTMPS), H.264 recommended.
