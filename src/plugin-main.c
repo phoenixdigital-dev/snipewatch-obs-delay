@@ -23,6 +23,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
  *   and switch back to the original one.
  * - Hotkeys: delay 30 s / 60 s / no delay.
  * - obs-websocket vendor "snipewatch-delay": SetDelay {seconds}, GetState, event DelayChanged.
+ * - Link with the SnipeWatch app (remote.c): chat commands and automatic triggers, via a personal token.
  */
 
 #include <obs-module.h>
@@ -31,7 +32,12 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <util/platform.h>
 
 #include "delay-buffer.h"
+#include "remote.h"
 #include "third-party/obs-websocket-api.h"
+
+/* Qt dialogs (settings-dialog.cpp) */
+void swd_open_token_dialog(void);
+void swd_open_status_dialog(void);
 
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
@@ -72,6 +78,13 @@ static void change_delay(uint32_t seconds)
 
 /* ------------------------------------------------------------------------- */
 /* Tools menu: swap the streaming service                                    */
+
+/* UI thread only: is the delayed service the active streaming service? */
+static void refresh_delay_mode(void)
+{
+	obs_service_t *svc = obs_frontend_get_streaming_service();
+	swd_remote_set_delay_mode(svc && strcmp(obs_service_get_id(svc), SERVICE_ID) == 0);
+}
 
 static void enable_delay_mode(void *unused)
 {
@@ -124,6 +137,7 @@ static void enable_delay_mode(void *unused)
 	obs_frontend_set_streaming_service(svc);
 	obs_frontend_save_streaming_service();
 	obs_service_release(svc);
+	refresh_delay_mode();
 	obs_log(LOG_INFO, "delay mode enabled (server %s)", url);
 }
 
@@ -150,7 +164,48 @@ static void disable_delay_mode(void *unused)
 	obs_frontend_set_streaming_service(svc);
 	obs_frontend_save_streaming_service();
 	obs_service_release(svc);
+	refresh_delay_mode();
 	obs_log(LOG_INFO, "original streaming service restored");
+}
+
+/* ------------------------------------------------------------------------- */
+/* Frontend events                                                           */
+
+static void frontend_event(enum obs_frontend_event event, void *unused)
+{
+	UNUSED_PARAMETER(unused);
+	switch (event) {
+	case OBS_FRONTEND_EVENT_FINISHED_LOADING:
+	case OBS_FRONTEND_EVENT_PROFILE_CHANGED:
+		refresh_delay_mode();
+		break;
+	case OBS_FRONTEND_EVENT_STREAMING_STARTING:
+		refresh_delay_mode();
+		break;
+	case OBS_FRONTEND_EVENT_STREAMING_STARTED:
+		swd_remote_set_streaming(true);
+		break;
+	case OBS_FRONTEND_EVENT_STREAMING_STOPPED:
+		swd_remote_set_streaming(false);
+		/* The delay is a live thing: next stream starts without one unless asked again. */
+		swd_request_delay(0);
+		break;
+	default:
+		break;
+	}
+}
+
+static void menu_token(void *unused)
+{
+	UNUSED_PARAMETER(unused);
+	swd_open_token_dialog();
+}
+
+static void menu_status(void *unused)
+{
+	UNUSED_PARAMETER(unused);
+	refresh_delay_mode();
+	swd_open_status_dialog();
 }
 
 /* ------------------------------------------------------------------------- */
@@ -248,6 +303,11 @@ bool obs_module_load(void)
 
 	obs_frontend_add_tools_menu_item(obs_module_text("MenuEnable"), enable_delay_mode, NULL);
 	obs_frontend_add_tools_menu_item(obs_module_text("MenuDisable"), disable_delay_mode, NULL);
+	obs_frontend_add_tools_menu_item(obs_module_text("MenuToken"), menu_token, NULL);
+	obs_frontend_add_tools_menu_item(obs_module_text("MenuStatus"), menu_status, NULL);
+	obs_frontend_add_event_callback(frontend_event, NULL);
+
+	swd_remote_start(change_delay);
 
 	obs_log(LOG_INFO, "plugin loaded (version %s)", PLUGIN_VERSION);
 	return true;
@@ -267,6 +327,8 @@ void obs_module_post_load(void)
 
 void obs_module_unload(void)
 {
+	swd_remote_stop();
+	obs_frontend_remove_event_callback(frontend_event, NULL);
 	obs_frontend_remove_save_callback(save_hotkeys, NULL);
 	obs_hotkey_unregister(hk_30);
 	obs_hotkey_unregister(hk_60);

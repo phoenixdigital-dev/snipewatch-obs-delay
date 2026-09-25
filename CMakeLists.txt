@@ -5,7 +5,7 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCO
 project(${_name} VERSION ${_version})
 
 option(ENABLE_FRONTEND_API "Use obs-frontend-api for UI functionality" ON)
-option(ENABLE_QT "Use Qt functionality" OFF)
+option(ENABLE_QT "Use Qt functionality" ON)
 
 include(compilerconfig)
 include(defaults)
@@ -40,6 +40,8 @@ target_sources(
     src/plugin-main.c
     src/delay-buffer.c
     src/delay-service.c
+    src/remote.c
+    src/settings-dialog.cpp
     src/rtmp/rtmp-stream.c
     src/rtmp/rtmp-windows.c
     src/rtmp/flv-mux.c
@@ -64,7 +66,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE src src/rtmp src/shared
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE NO_CRYPTO ENABLE_HEVC)
 
 if(OS_WINDOWS)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::w32-pthreads iphlpapi winmm ws2_32)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::w32-pthreads iphlpapi winmm ws2_32 winhttp)
 endif()
 
 set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_name})
