@@ -16,7 +16,7 @@ Nothing is re-encoded. Memory: about 1 MB per second of history at 6 Mbps (up to
 
 ## Spike: how to test
 
-1. Install the plugin (copy the build output into OBS's plugin folder), restart OBS.
+1. Close OBS and run the installer (`snipewatch-obs-delay-<version>-windows-x64-setup.exe`, from the [Releases](https://github.com/phoenixdigital-dev/snipewatch-obs-delay/releases); built by GitHub Actions from this source, SHA-256 in the release notes). It installs into `%ProgramData%\obs-studio\plugins` and removes an older manual copy. Windows may warn about an unknown publisher: the installer is not code-signed yet. The zip is still there for a manual install.
 2. Configure your stream normally (Settings → Stream, Twitch, **rtmp://** server).
 3. **Tools → SnipeWatch Delay: enable delay mode** (keeps your server and key).
 4. Settings → Hotkeys: bind *SnipeWatch: 30 s delay* / *60 s* / *no delay*.

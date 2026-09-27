@@ -53,6 +53,7 @@ function Package {
         ErrorAction = 'SilentlyContinue'
         Path = @(
             "${ProjectRoot}/release/${ProductName}-*-windows-*.zip"
+            "${ProjectRoot}/release/${ProductName}-*-windows-*.exe"
         )
     }
 
@@ -66,6 +67,30 @@ function Package {
         Verbose = ($Env:CI -ne $null)
     }
     Compress-Archive -Force @CompressArgs
+    Log-Group
+
+    # Installeur .exe (Inno Setup, cmake/windows/installer.iss), à côté du zip.
+    Log-Group "Building installer..."
+    $SourceDir = Join-Path $ProjectRoot "release/${Configuration}"
+    $PluginDll = Join-Path $SourceDir "${ProductName}/bin/64bit/${ProductName}.dll"
+    if ( ! ( Test-Path $PluginDll ) ) {
+        throw "Plugin DLL not found (${PluginDll}): installer layout changed?"
+    }
+    $Iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6/ISCC.exe'
+    if ( ! ( Test-Path $Iscc ) ) {
+        choco install innosetup --no-progress -y | Out-Host
+    }
+    $IsccArgs = @(
+        '/Qp'
+        "/DAppVersion=${ProductVersion}"
+        "/DSourceDir=${SourceDir}"
+        "/DRepoDir=${ProjectRoot}"
+        "/DOutputDir=$(Join-Path $ProjectRoot 'release')"
+        "/DOutputBase=${OutputName}-setup"
+        (Join-Path $ProjectRoot 'cmake/windows/installer.iss')
+    )
+    & $Iscc @IsccArgs
+    if ( $LASTEXITCODE -ne 0 ) { throw "ISCC failed with exit code ${LASTEXITCODE}" }
     Log-Group
 }
 
