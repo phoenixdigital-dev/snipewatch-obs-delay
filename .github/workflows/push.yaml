@@ -96,7 +96,26 @@ jobs:
           if [[ "${RUNNER_DEBUG}" ]]; then set -x; fi
           shopt -s extglob
 
-          echo "### Checksums" > ${{ github.workspace }}/CHECKSUMS.txt
+          # Notes de version : avertissement « non signé » et installation manuelle, puis les empreintes.
+          cat > ${{ github.workspace }}/CHECKSUMS.txt <<'NOTES'
+          ### Install (Windows 10/11 64-bit, OBS Studio 31+)
+
+          > **Not code-signed yet** (planned). Windows SmartScreen will show *"Windows protected your PC"* for the installer: **More info → Run anyway**. Check the file first: in PowerShell, `Get-FileHash <file>` must print the SHA-256 below. Prefer not to run an unsigned installer? Use the manual install.
+
+          - **Installer**: close OBS, run `*-windows-x64-setup.exe` (admin rights), reopen OBS: **Tools → SnipeWatch Delay**.
+          - **Manual (zip)**: close OBS, extract `*-windows-x64.zip`, copy the `snipewatch-obs-delay` folder into `C:\ProgramData\obs-studio\plugins\` (create `plugins` if needed) so that you get `...\plugins\snipewatch-obs-delay\bin\64bit\snipewatch-obs-delay.dll`, reopen OBS.
+
+          ### Installation (français)
+
+          > **Pas encore signé** (prévu). Windows SmartScreen affichera « Windows a protégé votre ordinateur » : **Informations complémentaires → Exécuter quand même**. Vérifie le fichier avant : dans PowerShell, `Get-FileHash <fichier>` doit afficher l'empreinte SHA-256 ci-dessous. Tu préfères ne pas lancer un installeur non signé ? Fais l'installation manuelle.
+
+          - **Installeur** : ferme OBS, lance `*-windows-x64-setup.exe` (droits administrateur), rouvre OBS : **Outils → SnipeWatch Delay**.
+          - **Manuel (zip)** : ferme OBS, extrais `*-windows-x64.zip`, copie le dossier `snipewatch-obs-delay` dans `C:\ProgramData\obs-studio\plugins\` (crée `plugins` s'il n'existe pas) pour obtenir `...\plugins\snipewatch-obs-delay\bin\64bit\snipewatch-obs-delay.dll`, rouvre OBS.
+
+          Details / détails : [README](https://github.com/phoenixdigital-dev/snipewatch-obs-delay#install-windows)
+
+          NOTES
+          echo "### Checksums (SHA-256)" >> ${{ github.workspace }}/CHECKSUMS.txt
           for file in ${{ github.workspace }}/@(*.exe|*.deb|*.ddeb|*.pkg|*.tar.xz|*.zip); do
             echo "    ${file##*/}: $(sha256sum "${file}" | cut -d " " -f 1)" >> ${{ github.workspace }}/CHECKSUMS.txt
           done
