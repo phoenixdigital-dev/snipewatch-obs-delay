@@ -1,4 +1,4 @@
-; Installeur Windows du plugin (Inno Setup 6), compilé par .github/scripts/Package-Windows.ps1.
+﻿; Installeur Windows du plugin (Inno Setup 6), compilé par .github/scripts/Package-Windows.ps1.
 ; Variables passées par ce script : AppVersion, SourceDir (release/<config>), RepoDir, OutputDir, OutputBase.
 ;
 ; Le plugin va dans le dossier des plugins tiers d'OBS (%ProgramData%\obs-studio\plugins, OBS 28+),
