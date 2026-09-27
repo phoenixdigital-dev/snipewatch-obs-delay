@@ -17,6 +17,7 @@ the Free Software Foundation; either version 2 of the License, or
 #include <util/platform.h>
 #include <util/threading.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 
 #ifdef _WIN32
@@ -62,7 +63,7 @@ static void load_config(void)
 		return;
 	dstr_copy(&token, obs_data_get_string(d, "token"));
 	const char *s = obs_data_get_string(d, "server");
-	if (s && *s)
+	if (s && *s && strncmp(s, SWD_LEGACY_SERVER, strlen(SWD_LEGACY_SERVER)) != 0)
 		dstr_copy(&server, s);
 	obs_data_release(d);
 }

@@ -19,12 +19,14 @@ extern "C" {
 #endif
 
 /*
- * Link with the SnipeWatch app (app.cs2rouen.fr): the plugin asks "which delay now?" and
+ * Link with the SnipeWatch app (GetBetterCS, www.getbettercs.com): the plugin asks "which delay now?" and
  * reports what it applies. Chat commands and automatic triggers happen on the server.
  * Only a personal token is sent; only a number of seconds comes back.
  */
 
-#define SWD_DEFAULT_SERVER "https://app.cs2rouen.fr"
+#define SWD_DEFAULT_SERVER "https://www.getbettercs.com"
+/* Former address of the app (renamed on 2026-09-27): saved configs pointing to it are migrated. */
+#define SWD_LEGACY_SERVER "https://app.cs2rouen.fr"
 
 /* Called by the delay setter (plugin-main.c) when the server asks for a new delay. */
 typedef void (*swd_remote_apply_fn)(uint32_t seconds);

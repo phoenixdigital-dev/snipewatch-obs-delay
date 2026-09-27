@@ -1,6 +1,6 @@
 # SnipeWatch Delay for OBS
 
-Change your stream delay **while live**, without the stream dropping. Part of the SnipeWatch anti stream-sniping tools of [app.cs2rouen.fr](https://app.cs2rouen.fr).
+Change your stream delay **while live**, without the stream dropping. Part of the SnipeWatch anti stream-sniping tools of [GetBetterCS](https://www.getbettercs.com).
 
 ## How it works
 
